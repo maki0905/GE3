@@ -93,6 +93,22 @@ struct ModelData {
 	MaterialData material;
 };
 
+enum BlendMode {
+	//!< ブレンドなし
+	kBlendModeNone,
+	//!< 通常αブレンド。デフォルト。Src * SrcA + Dest * (1 - SrcA)
+	kBlendModeNormal,
+	//!< 加算。Src * SrcA + Dest * 1
+	kBlendModeAdd,
+	//!< 減算。Dest * 1 - Src * SrcA
+	kBlendModeSubtract,
+	//!< 乗算。Src * 0 + Dest * Src
+	kBlendModeMultily,
+	//!< スクリーン。Src * (1 - Dest) + Dest * 1
+	kBlendModeScreen,
+	//!< 利用してはいけない
+	kCountOfBlendMode,
+};
 
 //文字列を格納する
 std::string str0{ "STRING!!!" };
@@ -452,6 +468,13 @@ int WINAPI WinMain(
 	D3D12_BLEND_DESC blendDesc{};
 	//すべての色要素を書き込む
 	blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
+	blendDesc.RenderTarget[0].BlendEnable = TRUE;
+	blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
+	blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
+	blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
+	blendDesc.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ONE;
+	blendDesc.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
+	blendDesc.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ZERO;
 
 	//RasiterzerStateの設定
 	D3D12_RASTERIZER_DESC rasterizerDesc{};
@@ -879,10 +902,12 @@ int WINAPI WinMain(
 			if (ImGui::Button("Half Lambert")) {
 				materialData->enableLighting = 2;
 			}
+			ImGui::DragFloat("Lighting Intensity", &directionalLightData->intensity, 0.01f);
 			ImGui::DragFloat3("directionalLight", &directionalLightData->direction.x, 0.01f);
 			ImGui::DragFloat2("UVTranslate", &uvTransformSprite.translate.x, 0.01f, -10.0f, 10.0f);
 			ImGui::DragFloat2("UVScale", &uvTransformSprite.scale.x, 0.01f, -10.0f, 10.0f);
 			ImGui::SliderAngle("UVRotate", &uvTransformSprite.rotate.z);
+			ImGui::ColorEdit4("color", &materialData->color.x);
 			/*ImGui::SliderFloat3("transformationSprite", &transformSprite.translate.x, -1000.0f, 1000.0f, "%0.3f");*/
 			ImGui::End();
 			ImGui::ShowDemoWindow();
